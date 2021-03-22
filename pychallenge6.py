@@ -2,48 +2,51 @@
 the python challenge #6
 '''
 
+import pcutils
 import zipfile
-import requests
-import webbrowser
 
 
-def webpage_ok(url):
-    # OK status code is 200
-    # Not found is 404 (and there are many other codes...)
-    return requests.get(url).status_code == 200
-
-
-if __name__ == '__main__':
+def get_zip_archive():
     archive = zipfile.ZipFile('channel.zip', 'r')
-    print(f'Archive directory:')
-    archive.printdir()
-
-    print()
-
-    print(f'readme.txt: ')
-    print()
     readme = archive.read('readme.txt').decode('ascii')
-    print(f'{readme}')
+    pcutils.print_lines(readme.split(pcutils.NEWLINE),
+                        'readme')
+    return archive
 
-    print()
 
+def create_linked_list():
+    print('Next nothings:')
+    delim = 'Next nothing is '
     linked_list = dict()
     for txtfile in archive.namelist():
         key = txtfile[0:-4]
         contents = archive.read(txtfile).decode('ascii')
-        if 'Next nothing is ' in contents:
-            next_key = contents.split('Next nothing is ')[1]
+        if delim in contents:
+            next_key = contents.split(delim)[1]
         else:
             next_key = None
         linked_list[key] = [next_key, contents]
+    return linked_list
+
+
+if __name__ == '__main__':
+    pcutils.try_page('def/', 'channel', caption='Challenge page')
 
     print()
+
+    # there is a download for channel.zip
+    # manually put in the project directory
+
+    archive = get_zip_archive()
+    print()
+
+    linked_list = create_linked_list()
 
     print(f'Linked list:')
     key = '90052'
     while key is not None:
         next_key, message = linked_list[key]
-        print(f'key={key}: next={next_key} message={message}')
+        print(f'    key={key}: message={message}')
         key = next_key
 
     print()
@@ -62,18 +65,11 @@ if __name__ == '__main__':
     print(f'Voila!')
     print(answer)
 
-    url1 = 'http://www.pythonchallenge.com/pc/def/'
-    url2 = 'hockey'
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next (not quite) challenge: {url}')
-    print(f'Status is {webpage_ok(url)}.')
-    webbrowser.open(url)
+    print(f'Trying hockey.html...')
+    pcutils.try_page('def/', 'hockey')
+    message = pcutils.get_string_from_page('def/',
+                                           'hockey')
+    print(f'Message: {message}')
 
-    url1 = 'http://www.pythonchallenge.com/pc/def/'
-    url2 = 'oxygen'
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next challenge: {url}')
-    print(f'Status is {webpage_ok(url)}.')
-    webbrowser.open(url)
+    print(f'Trying oxygen.html')
+    pcutils.try_page('def/', 'oxygen', caption='Next challenge page')

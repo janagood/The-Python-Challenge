@@ -1,46 +1,43 @@
 '''
 the python challenge #7
 '''
-import cv2
-import requests
-import webbrowser
+import pcutils
+import os
 
 
-def webpage_ok(url):
-    return requests.get(url).status_code == 200
+def get_image_info(image_file_name):
+    page_image = pcutils.get_image('def/', 'oxygen', '.png',
+                                   caption='Oxygen.png',
+                                   filename=image_file_name)
+
+    height, width, channels = page_image.shape
+    print(f'image shape: height={height}, width={width}, channels={channels}')
+
+    print()
+
+    print(f'Gray bar pixels (line 43):')
+    result = ''
+    for x in range(1, 604, 7):
+        (b, g, r) = page_image[43, x]
+        print(f'(b, g, r) pixel at x={x}: ({b}, {g}, {r})')
+        result += chr(b)
+    print()
+    return result
+
+
+def get_message(s):
+    lines = s.split('. ')
+    pcutils.print_lines(lines, 'Message from the bar')
+    print()
+    message = list(map(int, lines[1].split('[')[1][0:-1].split(', ')))
+    return ''.join(map(chr, message))
 
 
 if __name__ == '__main__':
-    image = cv2.imread('pc7.png')
-    cv2.imshow('Oxygen challenge', image)
-    cv2.waitKey(0)
+    pcutils.try_page('def/', 'oxygen', caption='Challenge page')
 
-    height, width, channels = image.shape
-    print(f'height: {height}, width: {width}, channels: {channels}')
+    answer = get_message(get_image_info('oxygen'))
 
-    for x in range(1, 603, 7):
-        (b, g, r) = image[43, x]
-        print(f'(b, g, r) for pixel at ({43}, {x}): ({b}, {g}, {r})')
+    pcutils.try_page('def/', answer, caption='Next challenge page')
 
-    print()
-
-    line = ''
-    for x in range(1, 603, 7):
-        (b, g, r) = image[43, x]
-        print(f'(b, g, r) for pixel at ({43}, {x}): ({b}, {g}, {r})')
-        line += chr(b)
-
-    print()
-    print(f'Message from the bar: {line}')
-    print()
-
-    answer = ''.join(map(chr, [105, 110, 116, 101, 103, 114, 105, 116, 121]))
-
-    url1 = 'http://www.pythonchallenge.com/pc/def/'
-    url2 = answer
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next challenge page: {url}')
-    print(f'Status is {webpage_ok(url)}.')
-
-    webbrowser.open(url)
+    os.remove('oxygen.png')

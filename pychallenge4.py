@@ -2,49 +2,41 @@
 the python challenge #4
 '''
 
-import requests
-import webbrowser
-import collections
-import re
+import pcutils
 
-SPACE = ' '
 
-def webpage_ok(url):
-    # OK status code is 200
-    # Not found is 404 (and there are many other codes...)
-    return requests.get(url).status_code == 200
+def create_linked_list(start):
+    print('Next nothings:')
+    delim = 'and the next nothing is '
+    next_nothing = start
+    print(f'    nothing = {next_nothing}')
+    while True:
+        message = pcutils.get_string_from_page('def/',
+                                               'linkedlist',
+                                               ending='.php?nothing=' + next_nothing)
+        if delim not in message:
+            print(f'==last message: {message}')
+            break
+        next_nothing = message.split(delim)[1]
+        print(f'    nothing = {next_nothing}')
 
 
 if __name__ == '__main__':
-    url1 = 'http://www.pythonchallenge.com/pc/def/linkedlist.php?nothing='
-    url2 = '12345'
-    url = url1 + url2
+    pcutils.try_page('def/', 'linkedlist', '.php',
+                     caption='Challenge page')
 
-    while True:
-        try:
-            url2 = re.findall('\d+', requests.get(url).text)[0]
-            url = url1 + url2
-        except:
-            no_nothing = requests.get(url).text
-            print(f'First end of the chain message: {url2} {no_nothing}')
-            break
+    message = pcutils.get_string_from_page('def/', 'linkedlist',
+                                           ending='.php',
+                                           start='<body>',
+                                           end='<center>',)
+    pcutils.print_lines(message.split(pcutils.NEWLINE),
+                        'Hint from page source')
 
-    url2 = '8022'
-    url = url1 + url2
+    print()
 
-    while True:
-        try:
-            url2 = requests.get(url).text.strip().split('next nothing is ')[1]
-            url = url1 + url2
-        except:
-            no_nothing = requests.get(url).text
-            print(f'End of the chain message: {url2} {no_nothing}')
-            break
+    create_linked_list('12345')
 
-    url1 = 'http://www.pythonchallenge.com/pc/def/'
-    url2 = no_nothing
-    url = url1 + url2
-    print(f'Next challenge page: {url}...')
-    print(f'Status is {webpage_ok(url)}.')
+    create_linked_list('8022')
 
-    webbrowser.open(url)
+    pcutils.try_page('def/', 'peak', '.html',
+                     caption='Next challenge page')

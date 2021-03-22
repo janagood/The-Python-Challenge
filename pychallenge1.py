@@ -1,14 +1,8 @@
 '''
 the python challenge 1
 '''
-import requests
-import webbrowser
 
-
-def webpage_ok(url):
-    # OK status code is 200
-    # Not found is 404 (and there are many other codes...)
-    return requests.get(url).status_code == 200
+import pcutils
 
 
 def shift2(ch):
@@ -26,26 +20,20 @@ def shift_all(sentences):
 
 
 if __name__ == '__main__':
-    encoded = ['g fmnc wms bgblr rpylqjyrc gr zw fylb.',
-               'rfyrq ufyr amknsrcpq ypc dmp.',
-               'bmgle gr gl zw fylb gq glcddgagclr ylb rfyr\'q ufw rfgq rcvr gq qm jmle.',
-               'sqgle qrpgle.kyicrpylq() gq pcamkkclbcb.'
-               'lmu ynnjw ml rfc spj.']
-    print(f'Message to decode:')
-    for _ in encoded:
-        print(f'    {_}')
+    pcutils.try_page('def/', 'map', caption='Challenge page')
 
     print()
 
-    print(f'Decoded message:')
-    for _ in shift_all(encoded):
-        print(f'    {_}')
+    encoded = pcutils.get_string_from_page('def/',
+                                           'map',
+                                           start='<font color="#f000f0">',
+                                           end='</tr></td>')
+    pcutils.print_lines(encoded.split('. '),
+                        'Message to decode')
 
-    url1 = 'http://www.pythonchallenge.com/pc/def/'
-    url2 = ''.join(shift2(ch) for ch in 'map')
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next challenge page: {url}')
-    print(f'Status is {webpage_ok(url)}.')
+    pcutils.print_lines(''.join(shift_all(encoded)).split('. '),
+                        'Decoded message')
 
-    webbrowser.open(url)
+    page = ''.join(shift2(ch) for ch in 'map')
+    print(f'map shifted: {page}')
+    pcutils.try_page('def/', page, '.html', caption='Next challenge page')

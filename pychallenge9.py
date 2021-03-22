@@ -1,124 +1,59 @@
 '''
 this is python challenge #9
-
-http://www.pythonchallenge.com/pc/return/good.html
-
-just picture
-
-page source:
-
-  <title>connect the dots</title>
-	<img src="good.jpg" width="640" height="480" border="0"/>
-
-<!--
-first+second=?
-
-first:
-146,399,163,403,170,393,169,391,166,386,170,381,170,371,170,355,169,346,167,335,170,329,170,320,170,
-310,171,301,173,290,178,289,182,287,188,286,190,286,192,291,194,296,195,305,194,307,191,312,190,316,
-190,321,192,331,193,338,196,341,197,346,199,352,198,360,197,366,197,373,196,380,197,383,196,387,192,
-389,191,392,190,396,189,400,194,401,201,402,208,403,213,402,216,401,219,397,219,393,216,390,215,385,
-215,379,213,373,213,365,212,360,210,353,210,347,212,338,213,329,214,319,215,311,215,306,216,296,218,
-290,221,283,225,282,233,284,238,287,243,290,250,291,255,294,261,293,265,291,271,291,273,289,278,287,
-279,285,281,280,284,278,284,276,287,277,289,283,291,286,294,291,296,295,299,300,301,304,304,320,305,
-327,306,332,307,341,306,349,303,354,301,364,301,371,297,375,292,384,291,386,302,393,324,391,333,387,
-328,375,329,367,329,353,330,341,331,328,336,319,338,310,341,304,341,285,341,278,343,269,344,262,346,
-259,346,251,349,259,349,264,349,273,349,280,349,288,349,295,349,298,354,293,356,286,354,279,352,268,
-352,257,351,249,350,234,351,211,352,197,354,185,353,171,351,154,348,147,342,137,339,132,330,122,327,
-120,314,116,304,117,293,118,284,118,281,122,275,128,265,129,257,131,244,133,239,134,228,136,221,137,
-214,138,209,135,201,132,192,130,184,131,175,129,170,131,159,134,157,134,160,130,170,125,176,114,176,
-102,173,103,172,108,171,111,163,115,156,116,149,117,142,116,136,115,129,115,124,115,120,115,115,117,
-113,120,109,122,102,122,100,121,95,121,89,115,87,110,82,109,84,118,89,123,93,129,100,130,108,132,110,
-133,110,136,107,138,105,140,95,138,86,141,79,149,77,155,81,162,90,165,97,167,99,171,109,171,107,161,
-111,156,113,170,115,185,118,208,117,223,121,239,128,251,133,259,136,266,139,276,143,290,148,310,151,
-332,155,348,156,353,153,366,149,379,147,394,146,399
-
-second:
-156,141,165,135,169,131,176,130,187,134,191,140,191,146,186,150,179,155,175,157,168,157,163,157,159,
-157,158,164,159,175,159,181,157,191,154,197,153,205,153,210,152,212,147,215,146,218,143,220,132,220,
-125,217,119,209,116,196,115,185,114,172,114,167,112,161,109,165,107,170,99,171,97,167,89,164,81,162,
-77,155,81,148,87,140,96,138,105,141,110,136,111,126,113,129,118,117,128,114,137,115,146,114,155,115,
-158,121,157,128,156,134,157,136,156,136
-
--->
-           width height
-picture is 687 x 487
-
-basically: first numbers by twos represent points x0,y0 - x1,y1 ...
-draw lines between and it looks like a cow
-http://www.pythonchallenge.com/pc/return/cow.html
-   says hmm. it's a male.
-
 '''
+import pcutils
 import cv2
-import numpy
-import requests
-import webbrowser
+
+UN = 'huge'
+PW = 'file'
 
 
-def webpage_ok(url, un_pw):
-    return requests.get(url, auth=un_pw).status_code == 200
-
-
-if __name__ == '__main__':
-    url = 'http://www.pythonchallenge.com/pc/return/good.html'
-    page_text = requests.get(url, auth=('huge', 'file')).text
-    print(f'Source for {url}:')
-    print({page_text})
-
+def get_dots(n, s, e):
+    captions = ['', 'First dots', 'Second dots']
+    dots = pcutils.get_string_from_page(
+        'return/', 'good',
+        start=s, end=e,
+        un='huge', pw='file')
+    pcutils.print_lines(dots.split(pcutils.NEWLINE), captions[n])
+    dots = list(map(int,
+                    ''.join(dots.splitlines()).split(',')))
     print()
+    return list(zip(dots[0::2], dots[1::2]))
 
-    first_second = page_text.split('first:')[1].split('second:')
-    first = list(map(int, first_second[0][1:-2].split(',')))
-    second = list(map(int, first_second[1][1:-5].split(',')))
 
-    print(f'First: {list(first)}')
-    print(f'Second: {list(second)}')
+def connect_the_dots(dots1, dots2):
+    canvas = pcutils.create_white_canvas(
+        10 + max([y for x, y in dots1]
+                 + [y for x, y in dots2]),
+        10 + max([x for x, y in dots1]
+                 + [x for x, y in dots2]))
+    for i in range(1, len(dots1)):
+        pt1, pt2 = dots1[i - 1], dots1[i]
+        cv2.line(canvas, pt1, pt2, pcutils.BLACK)
 
-    print()
+    for i in range(1, len(dots2)):
+        pt1, pt2 = dots2[i - 1], dots2[i]
+        cv2.line(canvas, pt1, pt2, pcutils.RED)
 
-    first_points = list(zip(first[0::2], first[1::2]))
-    second_points = list(zip(second[0::2], second[1::2]))
-
-    height = 10 + max([y for x, y in first_points]
-                      + [y for x, y in second_points])
-    width = 10 + max([x for x, y in first_points]
-                     + [x for x, y in second_points])
-    print(f'Canvas height / width = {height} / {width}')
-
-    print()
-
-    canvas = 255 * numpy.ones((height, width, 3), dtype='uint8')
-    cv2.imshow('Blank canvas: ', canvas)
-    cv2.waitKey(0)
-
-    black = (0, 0, 0)
-    for i in range(1, len(first_points)):
-        pt1, pt2 = first_points[i - 1], first_points[i]
-        cv2.line(canvas, pt1, pt2, black)
-
-    red = (0, 0, 255)
-    for i in range(1, len(second_points)):
-        pt1, pt2 = second_points[i - 1], second_points[i]
-        cv2.line(canvas, pt1, pt2, red)
     cv2.imshow('Looks like a cow: ', canvas)
     cv2.waitKey(0)
 
-    url1 = 'http://www.pythonchallenge.com/pc/return/'
-    url2 = 'cow'
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next clue page: {url}')
-    un_pw = ('huge', 'file')
-    print(f'Status is {webpage_ok(url, un_pw)}.')
-    webbrowser.open(url)
 
+if __name__ == '__main__':
+    pcutils.try_page('return/', 'good', un=UN, pw=PW,
+                     caption='Challenge page')
     print()
 
-    url2 = 'bull'
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next challenge page: {url}')
-    un_pw = ('huge', 'file')
-    print(f'Status is {webpage_ok(url, un_pw)}.')
-    webbrowser.open(url)
+    connect_the_dots(get_dots(1, 'first:', 'second:'),
+                     get_dots(2, 'second:', '-->'))
+    print()
+
+    pcutils.try_page('return/', 'cow', un=UN, pw=PW,
+                     caption='Cow page')
+    message = pcutils.get_string_from_page(
+        'return/', 'cow',
+        un=UN, pw=PW)
+    print(f'Message: {message}')
+
+    pcutils.try_page('return/', 'bull', un=UN, pw=PW,
+                     caption='Next challenge page')

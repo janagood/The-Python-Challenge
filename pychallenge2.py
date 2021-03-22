@@ -1,46 +1,33 @@
 '''
 the python challenge 2
 '''
-import requests
-import webbrowser
+import pcutils
 import collections
 
-
-def webpage_ok(url):
-    # OK status code is 200
-    # Not found is 404 (and there are many other codes...)
-    return requests.get(url).status_code == 200
-
-
 if __name__ == '__main__':
-    url = 'http://www.pythonchallenge.com/pc/def/ocr.html'
-    webbrowser.open(url)
-    print(f'Source for {url}:')
-    print()
-    print(requests.get(url).text)
+    pcutils.try_page('def/', 'ocr', caption='Challenge page')
 
-# little kludge to get the text from the page source
-    mess_below = requests.get(url).text.strip().split('mess below')[1]
-    mess_below = mess_below[mess_below.index('%%'):-3]
+    print()
+
+    s = pcutils.get_string_from_page('def/', 'ocr',
+                                     start='<!--',
+                                     end='-->', )
+    mess_below = s[s.index('%'):]
+    pcutils.print_lines(mess_below.split(pcutils.NEWLINE)[0:10],
+                        'Mess below from web page')
+    print('...')
+
+    print()
 
     frequencies = collections.defaultdict(lambda: 0)
     for ch in mess_below:
-        if ch != '\n':
+        if ch.isalnum():
             frequencies[ch] += 1
-
-    for ch, f in frequencies.items():
-        print(f'Frequency of {ch} is {f}')
+    pcutils.print_lines(frequencies.items(),
+                        'Frequencies of characters in mess')
 
     print()
 
-    url1 = 'http://www.pythonchallenge.com/pc/def/'
-    url2 = ''.join(ch for ch, f in frequencies.items()
+    page = ''.join(ch for ch, f in frequencies.items()
                    if f == 1)
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next challenge page: {url}')
-    print(f'Status is {webpage_ok(url)}.')
-
-    webbrowser.open(url)
-
-
+    pcutils.try_page('def/', page, caption='Next challenge page')

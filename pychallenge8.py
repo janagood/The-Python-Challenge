@@ -2,28 +2,37 @@
 the python challenge #8
 '''
 
+import pcutils
 import bz2
-import requests
-import webbrowser
 
+def get_auth():
+# this is icky but ran into problems with \\s
+    page_bytes = pcutils.get_bytes_from_page('def/', 'integrity',
+                                             start='<!--', end='-->', )
+    un_pw = page_bytes.split(pcutils.bNEWLINE)
+    un_bytes = un_pw[0][5:-1].decode('unicode_escape').encode('raw_unicode_escape')
+    pw_bytes = un_pw[1][5:-1].decode('unicode_escape').encode('raw_unicode_escape')
+    un = bz2.decompress(un_bytes).decode('ascii')
+    pw = bz2.decompress(pw_bytes).decode('ascii')
+    return un, pw
 
-def webpage_ok(url, un_pw):
-    return requests.get(url, auth=un_pw).status_code == 200
 
 if __name__ == '__main__':
-    un = b'BZh91AY&SYA\xaf\x82\r\x00\x00\x01\x01\x80\x02\xc0\x02\x00 \x00!\x9ah3M\x07<]\xc9\x14\xe1BA\x06\xbe\x084'
-    print(f'Username: {bz2.decompress(un)}')
-    pw = b'BZh91AY&SY\x94$|\x0e\x00\x00\x00\x81\x00\x03$ \x00!\x9ah3M\x13<]\xc9\x14\xe1BBP\x91\xf08'
-    print(f'Password: {bz2.decompress(pw)}')
+#    pcutils.try_page('def/', 'integrity',
+#                     caption='Challenge page')
+
+# from url text
+    next_page = 'good'
+    print(f'Next challenge page is ...return/{next_page}.html.')
+    print(f'  It needs a username / password.')
 
     print()
 
-    url1 = 'http://www.pythonchallenge.com/pc/return/'
-    url2 = 'good'
-    url3 = '.html'
-    url = url1 + url2 + url3
-    print(f'Next challenge page: {url}')
-    un_pw = ('huge', 'file')
-    print(f'Status is {webpage_ok(url, un_pw)}.')
+    un, pw = get_auth()
+    print(f'Username: {un}')
+    print(f'Password: {pw}')
 
-    webbrowser.open(url)
+    print()
+
+    pcutils.try_page('return/', next_page, un=un,
+                      pw=pw, caption='Next challenge page')
