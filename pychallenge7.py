@@ -5,10 +5,10 @@ import pcutils
 import os
 
 
-def get_image_info(image_file_name):
-    page_image = pcutils.get_image('def/', 'oxygen', '.png',
-                                   caption='Oxygen.png',
-                                   filename=image_file_name)
+def get_gray_bar(image_file_name):
+    page_image = pcutils.get_image_data('def/', 'oxygen', '.png',
+                                        caption='Oxygen.png',
+                                        filename=image_file_name)
 
     height, width, channels = page_image.shape
     print(f'image shape: height={height}, width={width}, channels={channels}')
@@ -36,7 +36,7 @@ def get_message(s):
 if __name__ == '__main__':
     pcutils.try_page('def/', 'oxygen', caption='Challenge page')
 
-    answer = get_message(get_image_info('oxygen'))
+    answer = get_message(get_gray_bar('oxygen'))
 
     pcutils.try_page('def/', answer, caption='Next challenge page')
 
