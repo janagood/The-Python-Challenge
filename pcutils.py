@@ -23,12 +23,14 @@ BASIC_URL = 'http://www.pythonchallenge.com/pc/'
 NEWLINE = '\n'
 bNEWLINE = b'\n'
 SPACE = ' '
+PERIOD = '.'
 
 BLUE = (255, 0, 0)
 GREEN = (0, 255, 0)
 RED = (0, 0, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
 
 def try_page(subdir, page, ending='.html',
              un=None, pw=None, caption=None):
@@ -43,6 +45,7 @@ def try_page(subdir, page, ending='.html',
         response = requests.get(url, auth=(un, pw)).status_code
     if response == 200:
         webbrowser.open(url)
+
 
 def get_string_from_page(subdir, page, ending='.html',
                          start=None, end=None,
@@ -72,6 +75,7 @@ def get_string_from_page(subdir, page, ending='.html',
         return None
     return result
 
+
 def print_lines(lines, title, label=None):
     print(f'{title}:')
     for line in lines:
@@ -81,12 +85,14 @@ def print_lines(lines, title, label=None):
             else:
                 print(f'  {label} {line}')
 
+
 def get_bytes_from_page(subdir, page, ending='.html',
-              start=None, end=None,
-              un=None, pw=None):
+                        start=None, end=None,
+                        un=None, pw=None):
     url = BASIC_URL + subdir + page + ending
-    start = start.encode()
-    end = end.encode()
+    if start is not None:
+        start = start.encode()
+        end = end.encode()
     if un is None:
         t = requests.get(url).content
     else:
@@ -111,11 +117,13 @@ def get_bytes_from_page(subdir, page, ending='.html',
         return None
     return result
 
-def get_image(subdir, page, ending='.jpg',
+
+def get_image_data(subdir, page, ending='.jpg',
               un=None, pw=None,
               show=False,
               caption='Image', filename='img'):
-    data = get_bytes_from_page(subdir, page, ending)
+    data = get_bytes_from_page(subdir, page, ending,
+                               un=un, pw=pw)
     ifile = open(filename + ending, 'wb')
     ifile.write(data)
     ifile.close()
@@ -126,6 +134,23 @@ def get_image(subdir, page, ending='.jpg',
         cv2.waitKey(0)
     return image
 
+
 def create_white_canvas(height, width):
     #    canvas = 255 * numpy.ones((height, width, 3), dtype='uint8')
     return 255 * numpy.ones((height, width, 3))
+
+def get_image_file_info(subdir, page, ending='.html',
+                             un=None, pw=None):
+    url = BASIC_URL + subdir + page + ending
+    if un is None:
+        s = requests.get(url).text
+    else:
+        s = requests.get(url, auth=(un, pw)).text
+    lines = s.split(NEWLINE)
+    for line in lines:
+        line = line.strip()
+        if '<img src=' in line:
+            file_name, file_type = line[10:].split(PERIOD)
+            file_type = file_type.split('\"')[0]
+            return file_name, file_type
+
